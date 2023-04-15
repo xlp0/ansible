@@ -1,0 +1,15 @@
+- hosts: myhost
+
+  vars:
+    dir_path: "/Users/bkoo/Documents/Development/dockerizedAnsible"
+
+  tasks:
+    - name: List directory contents
+      command: ls -la "{{ dir_path }}"
+      register: ls_output
+
+- name: Ping localhost
+  hosts: myhost
+  tasks:
+    - name: Ping the local host
+      ping:
