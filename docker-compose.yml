@@ -2,7 +2,7 @@ version: '3'
 services:
         ansible:
                 container_name: ansible
-                image: ansible
+                image: bkoo/ansible
                 command: sleep infinity
                 volumes:
                   - ./ansible:/ansible
