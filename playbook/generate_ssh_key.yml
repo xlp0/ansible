@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  become: false
+  vars:
+    remote_user: "bkoo"
+    remote_host: "host.docker.internal"
+
+  tasks:
+  - name: Generate SSH key pair
+    shell: |
+        yes | ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+    register: ssh_key_output
+  - name: Copy SSH public key to remote host
+    shell: ssh-copy-id -i ~/.ssh/id_rsa.pub {{ remote_user }}@{{ remote_host }}
+    register: ssh_copy_output
+    when: ssh_key_output.rc == 0
+  - name: SSH to remote host
+    shell: ssh {{ remote_user }}@{{ remote_host }} 
+    register: ssh_output
+    when: ssh_copy_output.rc == 0 and ssh_copy_output.stdout.find('already') == -1
+  - name: Display the output of the command run on the remote host
+    debug:
+      var: ssh_output.stdout_lines
+
+- hosts: the_host
+  vars:
+    remote_user: "bkoo"
+  tasks:
+    - name: List files in home directory
+      shell: ls ~
+      become: true
+      become_user: "{{ remote_user }}"
+      register: login_result
+
+    - name: Display remote ls output
+      debug:
+        var: login_result.stdout_lines
+      when: login_result.rc == 0

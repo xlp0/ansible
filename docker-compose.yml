@@ -2,9 +2,9 @@ version: '3'
 services:
         ansible:
                 container_name: ansible
-                image: bkoo/ansible
+                image: pkc/ansible
                 command: sleep infinity
                 volumes:
-                  - ./ansible:/ansible
+                  - ./playbook:/playbook
                 extra_hosts:
                   - "host.docker.internal:host-gateway"

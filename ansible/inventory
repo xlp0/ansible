@@ -1,2 +1,0 @@
-[myhosts]
-myhost ansible_host=host.docker.internal ansible_user=bkoo

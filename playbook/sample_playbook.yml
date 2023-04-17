@@ -1,4 +1,4 @@
-- hosts: myhost
+- hosts: myhosts
 
   vars:
     dir_path: "/Users/bkoo/Documents/Development/dockerizedAnsible"
@@ -9,7 +9,7 @@
       register: ls_output
 
 - name: Ping localhost
-  hosts: myhost
+  hosts: myhosts
   tasks:
     - name: Ping the local host
       ping:

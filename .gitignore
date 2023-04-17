@@ -1,2 +1,4 @@
 *.tar.gz
 ansible/id_rsa.pub
+*.pub
+*.pem
