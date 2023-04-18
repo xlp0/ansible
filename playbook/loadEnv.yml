@@ -1,0 +1,41 @@
+---
+- name: Load variables from .env and inventory files
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Load variables from .env file
+      shell: cat .env
+      register: env_file
+      changed_when: false
+      ignore_errors: true
+
+
+    - name: Parse variables from .env file
+      set_fact:
+        env_vars: "{{ env_file.stdout_lines | map('split', '=') | map('list') | list }}"
+      when: env_file.stdout_lines is defined
+
+    - name: Print variables from .env file
+      debug:
+        var: env_vars
+      when: env_vars is defined
+      
+    - name: Print specific variable from .env file
+      set_fact:
+        aVar: "{{ item }}"
+      with_items: "{{ env_vars | selectattr('0', 'equalto', 'ansible_host') | list }}"
+      when: item is defined
+    - name: Print value of selected item
+      debug:
+        var: aVar
+
+    - name: Extract DB_PASSWORD
+      set_fact:
+        my_db_password: "{{ item.1 }}"
+      when: item.0 == "DB_PASSWORD"
+      loop: "{{ env_vars }}"
+
+    - name: Debug my_db_password
+      debug:
+        var: my_db_password
