@@ -1,0 +1,43 @@
+---
+- name: Load variables from .env and inventory files
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Load variables from .env file
+      shell: cat .env
+      register: env_file
+      changed_when: false
+      ignore_errors: true
+
+    - name: Parse variables from .env file
+      set_fact:
+        env_vars: "{{ env_file.stdout_lines | map('split', '=') | map('list') | list }}"
+      when: env_file.stdout_lines is defined
+
+    - name: Load variables from inventory.ini file
+      ini_file:
+        path: inventory.ini
+        section: all
+      register: inv_file
+
+    - name: Parse variables from inventory.ini file
+      set_fact:
+        inv_vars: "{{ inv_file.dict() }}"
+      when: inv_file is defined
+
+    - name: Print variables from .env file
+      debug:
+        var: env_vars
+      when: env_vars is defined
+
+    - name: Print variables from inventory.ini file
+      debug:
+        var: inv_vars
+      when: inv_vars is defined
+
+    - name: Check for same variable names
+      debug:
+        msg: "Variable name '{{ item }}' is defined in both .env and inventory.ini files."
+      loop: "{{ env_vars | map(attribute=0) | intersect(inv_vars.keys()) | list }}"
+      when: env_vars is defined and inv_vars is defined

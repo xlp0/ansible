@@ -1,0 +1,15 @@
+- name: Test SSH connection to remote host
+  hosts: localhost
+  vars:
+    remote_user: "bkoo"
+    remote_host: "host.docker.internal"
+  tasks:
+    - name: Test SSH passwordless login
+      shell: ssh -o PasswordAuthentication=no -o PubkeyAuthentication=yes "{{remote_user}}@{{remote_host}}"
+      register: ssh_output
+      ignore_errors: yes
+
+    - name: Check SSH passwordless login
+      fail:
+        msg: "SSH requires password authentication"
+      when: "'Permission denied' in ssh_output.stderr"

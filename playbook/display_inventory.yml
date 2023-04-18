@@ -1,0 +1,21 @@
+- name: Display ansible_host and ansible_user values from inventory.ini
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Find ansible_host and ansible_user lines in inventory.ini
+      lineinfile:
+        path: inventory.ini
+        line: "{{ item }}"
+        regexp: "^{{ item.split('=')[0] }}="
+        state: present
+      loop:
+        - "ansible_host"
+        - "ansible_user"
+
+    - name: Display ansible_host and ansible_user values
+      debug:
+        var: item.split('=')[1]
+      loop:
+        - "{{ lookup('file', 'inventory.ini') | regex_search('ansible_host=.*$') }}"
+        - "{{ lookup('file', 'inventory.ini') | regex_search('ansible_user=.*$') }}"

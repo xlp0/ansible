@@ -1,15 +1,9 @@
-- hosts: myhosts
-
+---
+- name: Example playbook
+  hosts: localhost
   vars:
-    dir_path: "/Users/bkoo/Documents/Development/dockerizedAnsible"
-
+    my_var: "{{ lookup('ini', 'my_var section=defaults file=' + ansible_config) }}"
   tasks:
-    - name: List directory contents
-      command: ls -la "{{ dir_path }}"
-      register: ls_output
-
-- name: Ping localhost
-  hosts: myhosts
-  tasks:
-    - name: Ping the local host
-      ping:
+    - name: Print variable value
+      debug:
+        var: my_var

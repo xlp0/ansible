@@ -13,7 +13,7 @@
   - name: Copy SSH public key to remote host
     shell: ssh-copy-id -i ~/.ssh/id_rsa.pub {{ remote_user }}@{{ remote_host }}
     register: ssh_copy_output
-    when: ssh_key_output.rc == 0
+    when: ssh_key_output.rc == 0 
   - name: SSH to remote host
     shell: ssh {{ remote_user }}@{{ remote_host }} 
     register: ssh_output

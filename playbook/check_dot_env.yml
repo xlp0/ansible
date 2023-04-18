@@ -1,0 +1,51 @@
+---
+- name: Update inventory file based on .env
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    env_file: ".env"
+    inventory_file: "inventory.ini"
+    variables_to_replace:
+      - "db_host"
+      - "db_port"
+  tasks:
+    - name: Check if .env file exists
+      stat:
+        path: "{{ env_file }}"
+      register: env_file_exists
+    - name: Display message if .env file exists
+      debug:
+        msg: "The .env file already exists."
+      when: env_file_exists.stat.exists
+    - name: Display message if .env file does not exist
+      debug:
+        msg: "The .env file does not exist. Creating a new file with default variables."
+      when: not env_file_exists.stat.exists
+    - name: Create .env file with default variables
+      copy:
+        content: |
+          ansible_user=admin
+          ansible_host=host.docker.internal
+        dest: "{{ env_file }}"
+      register: env_file_created
+      when: not env_file_exists.stat.exists
+    - name: Display .env file contents
+      debug:
+        var: env_file_created.content_lines
+      when: env_file_created.changed or not env_file_exists.stat.exists
+    - name: Load .env file variables
+      shell: ". {{ env_file }} && env"
+      register: env_file_vars
+      when: env_file_created.changed or not env_file_exists.stat.exists
+    - name: Extract variables to replace
+      set_fact:
+        vars_to_replace: "{{ env_file_vars.stdout_lines | map('split', '=') | selectattr('0', 'in', variables_to_replace) | list }}"
+      when: env_file_created.changed or not env_file_exists.stat.exists
+    - name: Replace variables in inventory file
+      replace:
+        path: "{{ inventory_file }}"
+        regexp: "{{ item.0 }}=.*$"
+        replace: "{{ item.0 }}={{ item.1 }}"
+      loop: "{{ vars_to_replace }}"
+      when: env_file_created.changed or not env_file_exists.stat.exists

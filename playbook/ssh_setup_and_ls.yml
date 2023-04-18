@@ -1,0 +1,47 @@
+---
+- name: Test SSH connection to remote_host
+  hosts: localhost
+  gather_facts: false
+  vars:
+    remote_host: "host.docker.internal"
+    remote_user: "bkoo"
+  tasks:
+    - name: Test SSH connection
+      wait_for:
+        port: 22
+        host: "{{ remote_host }}"
+        delay: 2
+        timeout: 5
+      ignore_errors: true
+      register: ssh_check
+
+    - name: The following Block will be executed only if ssh_check is false
+      block:
+      - name: Generate SSH key pair
+        shell: |
+            yes | ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+        register: ssh_key_output
+      - name: Copy SSH public key to remote host
+        shell: ssh-copy-id -i ~/.ssh/id_rsa.pub {{ remote_user }}@{{ remote_host }}
+        register: ssh_copy_output
+        when: ssh_key_output.rc == 0
+      when: not ssh_check
+
+- hosts: the_host 
+  vars:
+    remote_user: "bkoo"
+    tasks:
+      - name: List files in home directory
+        shell: ls ~
+        become: true
+        become_user: "{{ remote_user }}"
+        register: login_result
+
+      - name: Display remote ls output
+        debug:
+          var: login_result.stdout_lines
+        when: login_result.rc == 0      
+    when: ssh_check
+
+
+
