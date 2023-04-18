@@ -1,9 +1,10 @@
----
+---   
 - hosts: localhost
   become: false
   vars:
-    remote_user: "bkoo"
-    remote_host: "host.docker.internal"
+    # remote_user: "{{ hostvars['the_host']['ansible_user'] }}"
+    remote_user: " {{ the_user }}"
+    remote_host: "{{ hostvars['the_host']['ansible_host'] }}"
 
   tasks:
   - name: Generate SSH key pair
@@ -23,13 +24,11 @@
       var: ssh_output.stdout_lines
 
 - hosts: the_host
-  vars:
-    remote_user: "bkoo"
   tasks:
     - name: List files in home directory
       shell: ls ~
-      become: true
-      become_user: "{{ remote_user }}"
+      become: false
+      become_user:   " {{ the_user }} "
       register: login_result
 
     - name: Display remote ls output

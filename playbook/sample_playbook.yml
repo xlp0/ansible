@@ -2,8 +2,12 @@
 - name: Example playbook
   hosts: localhost
   vars:
-    my_var: "{{ lookup('ini', 'my_var section=defaults file=' + ansible_config) }}"
+    my_var: "{{ lookup('ini', 'my_var section=defaults file=' + 'ansible.cfg') }}"
   tasks:
     - name: Print variable value
       debug:
         var: my_var
+
+    - name: Extract variable from inventory
+      debug:
+        var: hostvars['the_host']['ansible_host']
