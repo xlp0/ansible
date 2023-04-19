@@ -5,7 +5,7 @@
   tasks:
     - name: Find ansible_host and ansible_user lines in inventory.ini
       lineinfile:
-        path: inventory.ini
+        path: ../inventory.ini
         line: "{{ item }}"
         regexp: "^{{ item.split('=')[0] }}="
         state: present

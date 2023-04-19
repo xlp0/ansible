@@ -2,9 +2,8 @@
 - hosts: localhost
   become: false
   vars:
-    # remote_user: "{{ hostvars['the_host']['ansible_user'] }}"
-    remote_user: " {{ the_user }}"
-    remote_host: "{{ hostvars['the_host']['ansible_host'] }}"
+    remote_user: bkoo
+    remote_host: host.docker.internal
 
   tasks:
   - name: Generate SSH key pair

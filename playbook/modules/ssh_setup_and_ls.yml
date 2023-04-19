@@ -13,7 +13,19 @@
         delay: 2
         timeout: 5
       ignore_errors: true
-      register: ssh_check
+      register: ssh_status
+
+    - name: Debug login_status
+      debug:
+        var: ssh_status
+    
+    - name: Store login_status in variable a_var
+      set_fact:
+        a_var: "{{ ssh_status['state'] }}"
+    
+    - name: Debug set_fact
+      debug:
+        var: a_var
 
     - name: The following Block will be executed only if ssh_check is false
       block:
@@ -24,13 +36,16 @@
       - name: Copy SSH public key to remote host
         shell: ssh-copy-id -i ~/.ssh/id_rsa.pub {{ remote_user }}@{{ remote_host }}
         register: ssh_copy_output
-        when: ssh_key_output.rc == 0
-      when: not ssh_check
+        when: ssh_key_output.rc == 0 
+      when: not login_status and a_var != "started"
 
 - hosts: the_host 
+  gather_facts: false
   vars:
     remote_user: "bkoo"
-    tasks:
+  tasks:
+    - name: The following Block will be executed only if ssh_check is false
+      block:
       - name: List files in home directory
         shell: ls ~
         become: true
@@ -40,8 +55,8 @@
       - name: Display remote ls output
         debug:
           var: login_result.stdout_lines
-        when: login_result.rc == 0      
-    when: ssh_check
+        when: login_result.rc == 0
+      when: not login_status      
 
 
 
